@@ -69,7 +69,7 @@ class HomeFragment : Fragment() {
 
         btnLogout.setOnClickListener(View.OnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
-                userStore.clearToken()
+                userStore.saveToken("")
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.frmFragmentRoot, LoginFragment.newInstance("", ""))
                     .commit()

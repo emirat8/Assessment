@@ -53,7 +53,6 @@ class LoginFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        userStore = UserStore(requireContext())
     }
 
     override fun onCreateView(
@@ -66,6 +65,7 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        userStore = UserStore(requireContext())
         CoroutineScope(Dispatchers.Main).launch {
             userStore.getAccessToken.collect { accessToken ->
                 Log.i("DATASTORE", accessToken)
@@ -76,7 +76,6 @@ class LoginFragment : Fragment() {
                 }
             }
         }
-
         btnLogin = view.findViewById(R.id.btnLogin)
         txtUsername = view.findViewById(R.id.editUsername)
         txtPassword = view.findViewById(R.id.editPassword)
@@ -91,6 +90,18 @@ class LoginFragment : Fragment() {
         })
     }
 
+    suspend fun checkToken(){
+        CoroutineScope(Dispatchers.Main).launch {
+            userStore.getAccessToken.collect { accessToken ->
+                Log.i("DATASTORE", accessToken)
+                if (accessToken != "") {
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.frmFragmentRoot, HomeFragment.newInstance("", ""))
+                        .commit()
+                }
+            }
+        }
+    }
     fun login(data: LoginRequest) {
         val client = ApiConfig.getApiService()
             .loginData(
@@ -109,7 +120,7 @@ class LoginFragment : Fragment() {
                 val responseBody = response.body()
                 if (response.isSuccessful && responseBody != null) {
                     CoroutineScope(Dispatchers.Main).launch {
-                        userStore.saveToken(responseBody.data.toString())
+                        userStore.saveToken(responseBody.data!!.token.toString())
                         parentFragmentManager.beginTransaction()
                             .replace(R.id.frmFragmentRoot, HomeFragment.newInstance("", ""))
                             .commit()
