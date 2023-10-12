@@ -6,8 +6,8 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class LoginRequest(
-    @field:SerializedName("username")
-    val username: String? = null,
+    @field:SerializedName("userName")
+    val userName: String? = null,
 
     @field:SerializedName("password")
     val password: String? = null
@@ -15,20 +15,26 @@ data class LoginRequest(
 
 @Parcelize
 data class RegisterRequest(
-    @field:SerializedName("nama")
-    val nama: String? = null,
-
     @field:SerializedName("email")
     val email: String? = null,
 
+    @field:SerializedName("userName")
+    val userName: String? = null,
+
     @field:SerializedName("password")
-    val password: String? = null
+    val password: String? = null,
+
+    @field:SerializedName("nama")
+    val nama: String? = null,
+
+    @field:SerializedName("jenisKelamin")
+    val jenisKelamin: String? = null
 ) : Parcelable
 
 @Parcelize
 data class LoginResponse(
-    @field:SerializedName("token")
-    val token: String? = null,
+    @field:SerializedName("data")
+    val data: String? = null,
 ) : Parcelable
 
 @Parcelize

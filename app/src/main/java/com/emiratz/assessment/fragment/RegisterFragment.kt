@@ -74,10 +74,7 @@ class RegisterFragment : Fragment() {
     fun register(data: RegisterRequest) {
         val client = ApiConfig.getApiService()
             .registerData(
-                RegisterRequest(
-                    data.nama.toString(),
-                    data.email.toString(),
-                    data.password.toString()
+                RegisterRequest("tes@yahoo.com", data.userName.toString(), data.password.toString(), data.nama.toString(), "laki-laki"
                 )
             )
 

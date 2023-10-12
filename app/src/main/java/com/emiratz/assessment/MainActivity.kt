@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity() {
 
         if(savedInstanceState == null){
             supportFragmentManager.beginTransaction()
-                .replace(R.id.frmFragmentRoot, RegisterFragment.newInstance("", ""))
+                .replace(R.id.frmFragmentRoot, LoginFragment.newInstance("", ""))
                 .commit()
         }
     }
