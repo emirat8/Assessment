@@ -11,14 +11,17 @@ data class LoginResponse(
 ) : Parcelable
 @Parcelize
 data class UserDataLoginResponse(
+    @field:SerializedName("id")
+    val id: Int? = null,
+
     @field:SerializedName("token")
     val token: String? = null,
 ) : Parcelable
 
 @Parcelize
 data class LoginRequest(
-    @field:SerializedName("userName")
-    val userName: String? = null,
+    @field:SerializedName("username")
+    val username: String? = null,
 
     @field:SerializedName("password")
     val password: String? = null
@@ -29,17 +32,15 @@ data class RegisterRequest(
     @field:SerializedName("email")
     val email: String? = null,
 
-    @field:SerializedName("userName")
-    val userName: String? = null,
+    @field:SerializedName("username")
+    val username: String? = null,
 
     @field:SerializedName("password")
     val password: String? = null,
 
-    @field:SerializedName("nama")
+    @field:SerializedName("name")
     val nama: String? = null,
 
-    @field:SerializedName("jenisKelamin")
-    val jenisKelamin: String? = null
 ) : Parcelable
 
 @Parcelize
@@ -47,3 +48,19 @@ data class RegisterResponse(
     @field:SerializedName("message")
     val message: String? = null,
 ) : Parcelable
+
+@Parcelize
+data class AssessmentResponse(
+    @field:SerializedName("id")
+    val id: String? = null,
+
+    @field:SerializedName("title")
+    val title: String? = null,
+
+    @field:SerializedName("closeDate")
+    val closeDate: String? = null,
+) : Parcelable
+
+data class UserData(
+    val token: String,
+    val userId: Int)

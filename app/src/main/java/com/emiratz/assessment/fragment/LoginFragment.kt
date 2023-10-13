@@ -9,20 +9,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import com.emiratz.assessment.R
 import com.emiratz.assessment.model.LoginRequest
 import com.emiratz.assessment.model.LoginResponse
 import com.emiratz.assessment.network.ApiConfig
-import com.emiratz.assessment.util.UserStore
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
+import com.emiratz.assessment.util.DataStoreManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -34,79 +34,79 @@ private const val ARG_PARAM2 = "param2"
  * Use the [LoginFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class LoginFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-    lateinit var btnLogin: Button
-    lateinit var txtUsername: EditText
-    lateinit var txtPassword: EditText
-    private lateinit var userStore: UserStore
+class LoginFragment : Fragment(), CoroutineScope {
+    private lateinit var dataStoreManager: DataStoreManager
+    private lateinit var job: Job
+    lateinit var loginButton: Button
+    lateinit var navigateRegisterButton: TextView
+    lateinit var usernameEditText: EditText
+    lateinit var passwordEditText: EditText
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        job = Job()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel() // Hentikan semua pekerjaan ketika fragment dihancurkan
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_login, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        userStore = UserStore(requireContext())
-        CoroutineScope(Dispatchers.Main).launch {
-            userStore.getAccessToken.collect { accessToken ->
-                Log.i("DATASTORE", accessToken)
-                if (accessToken != "") {
-                    parentFragmentManager.beginTransaction()
-                        .replace(R.id.frmFragmentRoot, HomeFragment.newInstance("", ""))
-                        .commit()
-                }
+        dataStoreManager = DataStoreManager(requireContext())
+        loginButton = view.findViewById(R.id.btnLogin)
+        navigateRegisterButton = view.findViewById(R.id.btnNavigateRegister)
+        usernameEditText = view.findViewById(R.id.editUsername)
+        passwordEditText = view.findViewById(R.id.editPassword)
+
+        // Cek apakah token ada di DataStore saat fragment di-load
+        launch {
+            val token = dataStoreManager.getTokenValue()
+            if (token.isNotBlank()) {
+                // Jika token ditemukan, tampilkan fragment Home
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.frmFragmentRoot, HomeFragment())
+                    .commit()
             }
         }
-        btnLogin = view.findViewById(R.id.btnLogin)
-        txtUsername = view.findViewById(R.id.editUsername)
-        txtPassword = view.findViewById(R.id.editPassword)
 
-        btnLogin.setOnClickListener(View.OnClickListener {
+        navigateRegisterButton.setOnClickListener{
+            requireActivity().supportFragmentManager.beginTransaction()
+                .addToBackStack(null)
+                .replace(R.id.frmFragmentRoot, RegisterFragment())
+                .commit()
+        }
+
+        loginButton.setOnClickListener {
             login(
                 LoginRequest(
-                    txtUsername.text.toString(),
-                    txtPassword.text.toString(),
+                    usernameEditText.text.toString(),
+                    passwordEditText.text.toString(),
                 )
             )
-        })
-    }
-
-    suspend fun checkToken(){
-        CoroutineScope(Dispatchers.Main).launch {
-            userStore.getAccessToken.collect { accessToken ->
-                Log.i("DATASTORE", accessToken)
-                if (accessToken != "") {
-                    parentFragmentManager.beginTransaction()
-                        .replace(R.id.frmFragmentRoot, HomeFragment.newInstance("", ""))
-                        .commit()
-                }
-            }
         }
     }
+
     fun login(data: LoginRequest) {
         val client = ApiConfig.getApiService()
             .loginData(
                 LoginRequest(
-                    data.userName.toString(),
+                    data.username.toString(),
                     data.password.toString()
                 )
             )
@@ -119,13 +119,21 @@ class LoginFragment : Fragment() {
                 Log.i("LOGIN", response.toString())
                 val responseBody = response.body()
                 if (response.isSuccessful && responseBody != null) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        userStore.saveToken(responseBody.data!!.token.toString())
-                        parentFragmentManager.beginTransaction()
-                            .replace(R.id.frmFragmentRoot, HomeFragment.newInstance("", ""))
-                            .commit()
+                    launch {
+                        Log.i("DATASTORE", responseBody.data!!.token.toString())
+                        Log.i("DATASTORE", responseBody.data!!.id!!.toString())
+
+                        dataStoreManager.saveToken(responseBody.data!!.token.toString())
+                        dataStoreManager.saveUserId(responseBody.data!!.id!!)
                     }
-                    Log.e("LOGIN", "onSuccess: ${responseBody.data}")
+
+                    // Ganti fragment ke HomeFragment
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .addToBackStack(null)
+                        .replace(R.id.frmFragmentRoot, HomeFragment())
+                        .commit()
+
+                    Log.i("LOGIN", "onSuccess: ${responseBody.data}")
                 }
             }
 
@@ -133,10 +141,6 @@ class LoginFragment : Fragment() {
                 Log.e("LOGIN", "onFailure: ${t.message.toString()}")
             }
         })
-    }
-
-    fun toRequestBody(value: String): RequestBody {
-        return value.toRequestBody("text/plain".toMediaTypeOrNull())
     }
 
     companion object {

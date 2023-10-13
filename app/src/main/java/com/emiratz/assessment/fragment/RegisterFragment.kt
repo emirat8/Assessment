@@ -74,7 +74,7 @@ class RegisterFragment : Fragment() {
     fun register(data: RegisterRequest) {
         val client = ApiConfig.getApiService()
             .registerData(
-                RegisterRequest("tes@yahoo.com", data.userName.toString(), data.password.toString(), data.nama.toString(), "laki-laki"
+                RegisterRequest(data.email.toString(), data.username.toString(), data.password.toString(), data.nama.toString()
                 )
             )
 
@@ -86,11 +86,9 @@ class RegisterFragment : Fragment() {
                 Log.i("LOGIN", response.toString())
                 val responseBody = response.body()
                 if (response.isSuccessful && responseBody != null) {
-                    Log.e("LOGIN", "onSuccess: ${responseBody.message}")
-                    Toast.makeText(context, "${responseBody.message}", Toast.LENGTH_SHORT)
+                    Log.i("LOGIN", "onSuccess: ${responseBody.message}")
                     parentFragmentManager.beginTransaction()
-                        .addToBackStack("home")
-                        .replace(R.id.frmFragmentRoot, HomeFragment.newInstance("", ""))
+                        .replace(R.id.frmFragmentRoot, LoginFragment())
                         .commit()
                 }
             }

@@ -1,6 +1,5 @@
 package com.emiratz.assessment.fragment
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -8,14 +7,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.emiratz.assessment.R
-import com.emiratz.assessment.model.LoginRequest
-import com.emiratz.assessment.util.UserStore
+import com.emiratz.assessment.adapter.AssessmentAdapter
+import com.emiratz.assessment.model.AssessmentResponse
+import com.emiratz.assessment.network.ApiConfig
+import com.emiratz.assessment.util.DataStoreManager
+import com.emiratz.assessment.util.DataViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import kotlin.coroutines.CoroutineContext
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -27,55 +37,107 @@ private const val ARG_PARAM2 = "param2"
  * Use the [HomeFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class HomeFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-    lateinit var txtTitle: TextView
-    private lateinit var userStore: UserStore
-    lateinit var btnLogout: Button
+class HomeFragment : Fragment(), CoroutineScope {
+    private lateinit var dataStoreManager: DataStoreManager
+    private lateinit var job: Job
+    private lateinit var dataViewModel: DataViewModel // ViewModel untuk menyimpan data
+    lateinit var tokenTextView: TextView
+    lateinit var userIdTextView: TextView
+    lateinit var logoutButton: Button
+    lateinit var rvAssessment: RecyclerView
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+        job = Job()
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        userStore = UserStore(requireContext())
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel() // Hentikan semua pekerjaan ketika fragment dihancurkan
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        txtTitle = view.findViewById(R.id.txtTitle)
-        btnLogout = view.findViewById(R.id.btnLogout)
+        dataStoreManager = DataStoreManager(requireContext())
+        logoutButton = view.findViewById(R.id.btnLogout)
+        tokenTextView = view.findViewById(R.id.txtToken)
+        userIdTextView = view.findViewById(R.id.txtUserId)
+        rvAssessment = view.findViewById(R.id.rvAssessment)
 
-        CoroutineScope(Dispatchers.Main).launch {
-            userStore.getAccessToken.collect { accessToken ->
-                txtTitle.text = accessToken
-            }
+        // Tampilkan token dari DataStore
+        launch {
+            dataStoreManager.getToken
+                .collect { token ->
+                    withContext(Dispatchers.Main) {
+                        tokenTextView.text = "Token : $token!"
+                    }
+                }
         }
 
-        btnLogout.setOnClickListener(View.OnClickListener {
-            CoroutineScope(Dispatchers.Main).launch {
-                userStore.saveToken("")
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.frmFragmentRoot, LoginFragment.newInstance("", ""))
+        launch {
+            dataStoreManager.getUserId
+                .collect { userId ->
+                    withContext(Dispatchers.Main) {
+                        userIdTextView.text = "UserId : $userId!"
+                    }
+                }
+        }
+
+        logoutButton.setOnClickListener {
+            launch {
+                clearDataStore()
+                val loginFragment = LoginFragment()
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.frmFragmentRoot, loginFragment)
                     .commit()
             }
-        })
+        }
     }
+
+    suspend fun clearDataStore() {
+        dataStoreManager.clearToken()
+        dataStoreManager.clearUserId()
+    }
+
+//    fun getAllAssessment(){
+//        val client = ApiConfig.getApiService().getAllAssessment()
+//
+//        client.enqueue(object : Callback<AssessmentResponse> {
+//            override fun onResponse(
+//                call: Call<AssessmentResponse>,
+//                response: Response<AssessmentResponse>
+//            ) {
+//                val responseBody = response.body()
+//                if (response.isSuccessful && responseBody != null) {
+//                    assessmentAdapter = AssessmentAdapter(responseBody, {item ->
+//                        parentFragmentManager.beginTransaction()
+//                            .addToBackStack("add form")
+//                            .replace(R.id.frmFragmentRoot, AddCollection.newInstance("update", item, "Update Data"))
+//                            .commit()
+//                    }, {item ->
+//                        deleteCollection(item)
+//                    })
+//                    recyclerView.layoutManager = LinearLayoutManager(context)
+//                    recyclerView.adapter = collectionAdapter
+//                }
+//            }
+//
+//            override fun onFailure(call: Call<ResponseGetAllData>, t: Throwable) {
+//                showProgressBar(false)
+//                Log.e("INFO", "onFailure: ${t.message.toString()}")
+//            }
+//        })
+//    }
 
     companion object {
         /**

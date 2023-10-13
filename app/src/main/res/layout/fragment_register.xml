@@ -49,6 +49,19 @@
             android:textColorHint="#525D83" />
 
         <EditText
+            android:id="@+id/editUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_field"
+            android:ems="10"
+            android:hint="Username"
+            android:inputType="text"
+            android:padding="16dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#525D83" />
+
+        <EditText
             android:id="@+id/editPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -63,10 +76,10 @@
 
         <Button
             android:id="@+id/btnRegister"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:backgroundTint="#564e45"
+            android:backgroundTint="#EA810A"
             android:text="Register" />
 
     </LinearLayout>

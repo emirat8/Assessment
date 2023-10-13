@@ -8,13 +8,13 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:gravity="right"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/txtTitle"
+            android:id="@+id/txtToken"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -48,12 +48,23 @@
             android:textColor="#FFFFFF"
             android:textColorHint="#525D83" />
 
-        <Button
-            android:id="@+id/btnLogin"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/btnNavigateRegister"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:backgroundTint="#564e45"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:text="Don't have an account yet? Register"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="#525D83" />
+
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#EA810A"
             android:text="Login" />
 
     </LinearLayout>
