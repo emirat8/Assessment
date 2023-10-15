@@ -1,10 +1,13 @@
 package com.emiratz.assessment.fragment
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.emiratz.assessment.R
@@ -28,6 +31,7 @@ class QuestionFragment(val listQuestion : List<QuestionResponse?>?) : Fragment()
     private var param2: String? = null
     lateinit var rvQuestion: RecyclerView
     private lateinit var questionAdapter : QuestionAdapter
+    lateinit var submitButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,7 +52,35 @@ class QuestionFragment(val listQuestion : List<QuestionResponse?>?) : Fragment()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rvQuestion = view.findViewById(R.id.rvQuestion)
+        submitButton = view.findViewById(R.id.btnSubmit)
+
         getAllQuestion()
+
+        submitButton.setOnClickListener{
+            // Membuat daftar pertanyaan yang dipilih
+            val selectedQuestions = mutableListOf<QuestionResponse>()
+
+            if (listQuestion != null) {
+                for (question in listQuestion) {
+                    if (question?.selectedChoice != -1) {
+                        if (question != null) {
+                            selectedQuestions.add(question)
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "Pilih semua opsi", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            // Di sini Anda memiliki daftar pertanyaan yang dipilih
+            // Anda dapat melakukan apa pun yang Anda butuhkan dengan daftar ini
+
+            // Contoh: Menampilkan pertanyaan yang dipilih dalam log
+            for (selectedQuestion in selectedQuestions) {
+                Log.d("Selected Question", "Question: ${selectedQuestion?.text}, " +
+                        "Selected Choice: ${selectedQuestion?.selectedChoice}")
+            }
+        }
 
     }
 

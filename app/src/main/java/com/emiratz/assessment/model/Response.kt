@@ -39,7 +39,10 @@ data class QuestionResponse(
     val image: String? = null,
 
     @field:SerializedName("choices")
-    val choices: List<ChoiceResponse?>? = null
+    val choices: List<ChoiceResponse?>? = null,
+
+    var selectedChoice: Int? = -1 // Properti untuk melacak pilihan yang dipilih
+
 ) : Parcelable
 
 @Parcelize
