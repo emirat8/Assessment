@@ -10,9 +10,9 @@ import com.emiratz.assessment.model.UserData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.io.IOException
 
 private val Context.dataStore by preferencesDataStore("user_prefs")
-
 class DataStoreManager(context: Context) {
     private val dataStore = context.dataStore
 
@@ -40,9 +40,17 @@ class DataStoreManager(context: Context) {
     }
 
     suspend fun saveUserId(userId: Int) {
-        Log.i("saveUserId", "test")
-        dataStore.edit { preferences ->
-            preferences[USER_ID_KEY] = userId
+        try {
+            dataStore.edit { preferences ->
+                preferences[USER_ID_KEY] = userId
+            }
+            // If you got here, the preferences were successfully committed
+        } catch (e: IOException) {
+            Log.i("saveUserId", e.toString())
+            // Handle error writing preferences to disk
+        } catch (e: Exception) {
+            Log.i("saveUserId", e.toString())
+            // Handle error thrown while executing transform block
         }
     }
 

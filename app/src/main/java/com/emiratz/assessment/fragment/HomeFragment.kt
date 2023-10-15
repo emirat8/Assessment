@@ -8,20 +8,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.emiratz.assessment.R
 import com.emiratz.assessment.adapter.AssessmentAdapter
-import com.emiratz.assessment.model.AssessmentResponse
+import com.emiratz.assessment.adapter.AssessmentResultAdapter
+import com.emiratz.assessment.model.AssessmentResultDummy
+import com.emiratz.assessment.model.AssessmentResultResponse
+import com.emiratz.assessment.model.ResponseGetAllData
 import com.emiratz.assessment.network.ApiConfig
 import com.emiratz.assessment.util.DataStoreManager
-import com.emiratz.assessment.util.DataViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -39,12 +41,14 @@ private const val ARG_PARAM2 = "param2"
  */
 class HomeFragment : Fragment(), CoroutineScope {
     private lateinit var dataStoreManager: DataStoreManager
-    private lateinit var job: Job
-    private lateinit var dataViewModel: DataViewModel // ViewModel untuk menyimpan data
     lateinit var tokenTextView: TextView
     lateinit var userIdTextView: TextView
     lateinit var logoutButton: Button
     lateinit var rvAssessment: RecyclerView
+    private lateinit var assessmentAdapter : AssessmentAdapter
+    lateinit var rvAssessmentResult: RecyclerView
+    private lateinit var assessmentResultAdapter : AssessmentResultAdapter
+    private lateinit var job: Job
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -52,11 +56,6 @@ class HomeFragment : Fragment(), CoroutineScope {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         job = Job()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        job.cancel() // Hentikan semua pekerjaan ketika fragment dihancurkan
     }
 
     override fun onCreateView(
@@ -73,25 +72,23 @@ class HomeFragment : Fragment(), CoroutineScope {
         tokenTextView = view.findViewById(R.id.txtToken)
         userIdTextView = view.findViewById(R.id.txtUserId)
         rvAssessment = view.findViewById(R.id.rvAssessment)
-
-        // Tampilkan token dari DataStore
-        launch {
-            dataStoreManager.getToken
-                .collect { token ->
-                    withContext(Dispatchers.Main) {
-                        tokenTextView.text = "Token : $token!"
-                    }
-                }
-        }
+        rvAssessmentResult = view.findViewById(R.id.rvAssessmentResult)
 
         launch {
-            dataStoreManager.getUserId
-                .collect { userId ->
-                    withContext(Dispatchers.Main) {
-                        userIdTextView.text = "UserId : $userId!"
-                    }
-                }
+            combine(dataStoreManager.getToken, dataStoreManager.getUserId) { token, userId ->
+                tokenTextView.text = "Token : $token!"
+                userIdTextView.text = "UserId : $userId!"
+            }.collect()
         }
+
+        // Panggil getAllAssessment dengan token dan userId yang diperoleh dari dataStore
+        launch {
+            val token = dataStoreManager.getTokenValue()
+            val userId = dataStoreManager.getUserIdValue()
+            getAllAssessment(token, userId)
+        }
+
+        getAllAssessmentResult()
 
         logoutButton.setOnClickListener {
             launch {
@@ -109,35 +106,59 @@ class HomeFragment : Fragment(), CoroutineScope {
         dataStoreManager.clearUserId()
     }
 
-//    fun getAllAssessment(){
-//        val client = ApiConfig.getApiService().getAllAssessment()
-//
-//        client.enqueue(object : Callback<AssessmentResponse> {
-//            override fun onResponse(
-//                call: Call<AssessmentResponse>,
-//                response: Response<AssessmentResponse>
-//            ) {
-//                val responseBody = response.body()
-//                if (response.isSuccessful && responseBody != null) {
-//                    assessmentAdapter = AssessmentAdapter(responseBody, {item ->
-//                        parentFragmentManager.beginTransaction()
-//                            .addToBackStack("add form")
-//                            .replace(R.id.frmFragmentRoot, AddCollection.newInstance("update", item, "Update Data"))
-//                            .commit()
-//                    }, {item ->
-//                        deleteCollection(item)
-//                    })
-//                    recyclerView.layoutManager = LinearLayoutManager(context)
-//                    recyclerView.adapter = collectionAdapter
+    fun getAllAssessment(token:String, userId:Int){
+        val client = ApiConfig.getApiService().getAllAssessment("Bearer $token", userId)
+
+        launch{
+            client.enqueue(object : Callback<ResponseGetAllData> {
+                override fun onResponse(
+                    call: Call<ResponseGetAllData>,
+                    response: Response<ResponseGetAllData>
+                ) {
+                    Log.i("ASSESSMENT", response.toString())
+                    val responseBody = response.body()
+                    if (response.isSuccessful && responseBody != null) {
+                        assessmentAdapter = AssessmentAdapter(responseBody.data!!, requireContext())
+                        rvAssessment.layoutManager = LinearLayoutManager(context)
+                        rvAssessment.adapter = assessmentAdapter
+                    }
+                }
+
+                override fun onFailure(call: Call<ResponseGetAllData>, t: Throwable) {
+                    Log.e("INFO", "onFailure: ${t.message.toString()}")
+                }
+            })
+        }
+    }
+
+    fun getAllAssessmentResult(){
+//        val client = ApiConfig.getApiService().getAllAssessmentResult("Bearer $token", userId)
+
+        assessmentResultAdapter = AssessmentResultAdapter(AssessmentResultDummy.dataAssessmentResult.data!!, requireContext())
+        rvAssessmentResult.layoutManager = LinearLayoutManager(context)
+        rvAssessmentResult.adapter = assessmentResultAdapter
+
+//        launch{
+//            client.enqueue(object : Callback<AssessmentResultResponse> {
+//                override fun onResponse(
+//                    call: Call<AssessmentResultResponse>,
+//                    response: Response<AssessmentResultResponse>
+//                ) {
+//                    Log.i("ASSESSMENT", response.toString())
+//                    val responseBody = response.body()
+//                    if (response.isSuccessful && responseBody != null) {
+//                        assessmentResultAdapter = AssessmentResultAdapter(responseBody.data!!, requireContext())
+//                        rvAssessmentResult.layoutManager = LinearLayoutManager(context)
+//                        rvAssessmentResult.adapter = assessmentResultAdapter
+//                    }
 //                }
-//            }
 //
-//            override fun onFailure(call: Call<ResponseGetAllData>, t: Throwable) {
-//                showProgressBar(false)
-//                Log.e("INFO", "onFailure: ${t.message.toString()}")
-//            }
-//        })
-//    }
+//                override fun onFailure(call: Call<ResponseGetAllData>, t: Throwable) {
+//                    Log.e("INFO", "onFailure: ${t.message.toString()}")
+//                }
+//            })
+//        }
+    }
 
     companion object {
         /**

@@ -1,6 +1,5 @@
 package com.emiratz.assessment.fragment
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -36,27 +35,18 @@ private const val ARG_PARAM2 = "param2"
  */
 class LoginFragment : Fragment(), CoroutineScope {
     private lateinit var dataStoreManager: DataStoreManager
-    private lateinit var job: Job
     lateinit var loginButton: Button
     lateinit var navigateRegisterButton: TextView
     lateinit var usernameEditText: EditText
     lateinit var passwordEditText: EditText
+    private lateinit var job: Job
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         job = Job()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        job.cancel() // Hentikan semua pekerjaan ketika fragment dihancurkan
     }
 
     override fun onCreateView(
@@ -73,17 +63,6 @@ class LoginFragment : Fragment(), CoroutineScope {
         navigateRegisterButton = view.findViewById(R.id.btnNavigateRegister)
         usernameEditText = view.findViewById(R.id.editUsername)
         passwordEditText = view.findViewById(R.id.editPassword)
-
-        // Cek apakah token ada di DataStore saat fragment di-load
-        launch {
-            val token = dataStoreManager.getTokenValue()
-            if (token.isNotBlank()) {
-                // Jika token ditemukan, tampilkan fragment Home
-                requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.frmFragmentRoot, HomeFragment())
-                    .commit()
-            }
-        }
 
         navigateRegisterButton.setOnClickListener{
             requireActivity().supportFragmentManager.beginTransaction()
@@ -121,17 +100,15 @@ class LoginFragment : Fragment(), CoroutineScope {
                 if (response.isSuccessful && responseBody != null) {
                     launch {
                         Log.i("DATASTORE", responseBody.data!!.token.toString())
-                        Log.i("DATASTORE", responseBody.data!!.id!!.toString())
-
                         dataStoreManager.saveToken(responseBody.data!!.token.toString())
+                        Log.i("DATASTORE", responseBody.data!!.id!!.toString())
                         dataStoreManager.saveUserId(responseBody.data!!.id!!)
-                    }
 
-                    // Ganti fragment ke HomeFragment
-                    requireActivity().supportFragmentManager.beginTransaction()
-                        .addToBackStack(null)
-                        .replace(R.id.frmFragmentRoot, HomeFragment())
-                        .commit()
+                        // Ganti fragment ke HomeFragment setelah semua tugas selesai
+                        requireActivity().supportFragmentManager.beginTransaction()
+                            .replace(R.id.frmFragmentRoot, HomeFragment())
+                            .commit()
+                    }
 
                     Log.i("LOGIN", "onSuccess: ${responseBody.data}")
                 }

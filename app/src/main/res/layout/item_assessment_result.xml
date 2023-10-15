@@ -22,7 +22,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/txtAssessmentTitle"
+                android:id="@+id/txtAssessmentResultTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
@@ -30,18 +30,17 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
             <TextView
-                android:id="@+id/txtAssessmentScore"
+                android:id="@+id/txtAssessmentResultScore"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:text="Assessment Title"
+                android:text="Assessment Score"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
             <TextView
-                android:id="@+id/txtAssessmentCloseDate"
+                android:id="@+id/txtAssessmentResultTakeDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Assessment Close Date"
+                android:text="Assessment Take Date"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small" />
         </LinearLayout>
 
