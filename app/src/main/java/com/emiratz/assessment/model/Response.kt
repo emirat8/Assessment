@@ -39,7 +39,19 @@ data class QuestionResponse(
     val image: String? = null,
 
     @field:SerializedName("choices")
-    val choices: List<String?>? = null
+    val choices: List<ChoiceResponse?>? = null
+) : Parcelable
+
+@Parcelize
+data class ChoiceResponse(
+    @field:SerializedName("id")
+    val id: Int? = null,
+
+    @field:SerializedName("value")
+    val value: String? = null,
+
+    @field:SerializedName("true")
+    val isTrue: Boolean? = false,
 ) : Parcelable
 @Parcelize
 data class AssessmentResultResponse(
@@ -129,31 +141,75 @@ object AssessmentResultDummy{
     )
 }
 
-//object AssessmentDummy{
-//    var dataAssessment = arrayListOf<AssessmentResponse>(
-//        AssessmentResponse(
-//            data = AssessmentDetailResponse(
-//                id = 1,
-//                title = "Assessment Pertama",
-//                closeDate = "2023-10-13"
-//            )
-//        ),
-//        AssessmentResponse(
-//            data = AssessmentDetailResponse(
-//                id = 2,
-//                title = "Assessment Kedua",
-//                closeDate = "2023-10-17"
-//            )
-//        ),
-//        AssessmentResponse(
-//            data = AssessmentDetailResponse(
-//                id = 3,
-//                title = "Assessment Ketiga",
-//                closeDate = "2023-10-25"
-//            )
-//        )
-//    )
-//}
+object AssessmentDummy{
+    var dataAssessment = arrayListOf<ResponseGetAllData>(
+        ResponseGetAllData(
+            data = arrayListOf(
+                AssessmentDetailResponse(
+                    id = 1,
+                    title = "Assessment Pertama",
+                    endDate = "2023-10-13",
+                    questions = arrayListOf(
+                        QuestionResponse(
+                            id = 1,
+                            text = "Question 1",
+                            image = null,
+                            choices = arrayListOf(
+                                ChoiceResponse(
+                                    id = 1,
+                                    value = "a",
+                                    isTrue = false
+                                ),
+                                ChoiceResponse(
+                                    id = 2,
+                                    value = "b",
+                                    isTrue = false
+                                ),
+                                ChoiceResponse(
+                                    id = 3,
+                                    value = "c",
+                                    isTrue = true
+                                ),
+                                ChoiceResponse(
+                                    id = 4,
+                                    value = "d",
+                                    isTrue = false
+                                )
+                            )
+                        ),
+                        QuestionResponse(
+                            id = 2,
+                            text = "Question 2",
+                            image = null,
+                            choices = arrayListOf(
+                                ChoiceResponse(
+                                    id = 5,
+                                    value = "a",
+                                    isTrue = false
+                                ),
+                                ChoiceResponse(
+                                    id = 6,
+                                    value = "b",
+                                    isTrue = false
+                                ),
+                                ChoiceResponse(
+                                    id = 7,
+                                    value = "c",
+                                    isTrue = true
+                                ),
+                                ChoiceResponse(
+                                    id = 8,
+                                    value = "d",
+                                    isTrue = false
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+}
 
 data class UserData(
     val token: String,

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.emiratz.assessment.R
 import com.emiratz.assessment.adapter.AssessmentAdapter
 import com.emiratz.assessment.adapter.AssessmentResultAdapter
+import com.emiratz.assessment.model.AssessmentDummy
 import com.emiratz.assessment.model.AssessmentResultDummy
 import com.emiratz.assessment.model.AssessmentResultResponse
 import com.emiratz.assessment.model.ResponseGetAllData
@@ -118,7 +119,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                     Log.i("ASSESSMENT", response.toString())
                     val responseBody = response.body()
                     if (response.isSuccessful && responseBody != null) {
-                        assessmentAdapter = AssessmentAdapter(responseBody.data!!, requireContext())
+                        assessmentAdapter = AssessmentAdapter(responseBody.data!!, requireActivity())
                         rvAssessment.layoutManager = LinearLayoutManager(context)
                         rvAssessment.adapter = assessmentAdapter
                     }
