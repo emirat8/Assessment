@@ -13,8 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.emiratz.assessment.R
 import com.emiratz.assessment.adapter.AssessmentAdapter
 import com.emiratz.assessment.adapter.AssessmentResultAdapter
-import com.emiratz.assessment.model.AssessmentDummy
-import com.emiratz.assessment.model.AssessmentResultDummy
+import com.emiratz.assessment.model.AssessmentDetailResponse
 import com.emiratz.assessment.model.AssessmentResultResponse
 import com.emiratz.assessment.model.ResponseGetAllData
 import com.emiratz.assessment.network.ApiConfig
@@ -87,9 +86,8 @@ class HomeFragment : Fragment(), CoroutineScope {
             val token = dataStoreManager.getTokenValue()
             val userId = dataStoreManager.getUserIdValue()
             getAllAssessment(token, userId)
+            //getAllAssessmentResult(token, userId)
         }
-
-        getAllAssessmentResult()
 
         logoutButton.setOnClickListener {
             launch {
@@ -119,6 +117,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                     Log.i("ASSESSMENT", response.toString())
                     val responseBody = response.body()
                     if (response.isSuccessful && responseBody != null) {
+                        Log.i("asd",responseBody.data?.filter { it?.participants!!.find { it?.id == userId }?.results!!.size == 0 }.toString())
                         assessmentAdapter = AssessmentAdapter(responseBody.data!!, requireActivity())
                         rvAssessment.layoutManager = LinearLayoutManager(context)
                         rvAssessment.adapter = assessmentAdapter
@@ -132,12 +131,37 @@ class HomeFragment : Fragment(), CoroutineScope {
         }
     }
 
-    fun getAllAssessmentResult(){
-//        val client = ApiConfig.getApiService().getAllAssessmentResult("Bearer $token", userId)
+    fun getAllAssessmentResult(token:String, userId:Int){
+        val client = ApiConfig.getApiService().getAllAssessmentResult("Bearer $token", userId)
 
-        assessmentResultAdapter = AssessmentResultAdapter(AssessmentResultDummy.dataAssessmentResult.data!!, requireContext())
-        rvAssessmentResult.layoutManager = LinearLayoutManager(context)
-        rvAssessmentResult.adapter = assessmentResultAdapter
+        launch{
+            client.enqueue(object : Callback<AssessmentResultResponse> {
+                override fun onResponse(
+                    call: Call<AssessmentResultResponse>,
+                    response: Response<AssessmentResultResponse>
+                ) {
+                    Log.i("ASSESSMENT", response.toString())
+                    val responseBody = response.body()
+                    if (response.isSuccessful && responseBody != null) {
+                        assessmentResultAdapter = AssessmentResultAdapter(responseBody.data!!, requireActivity())
+                        rvAssessment.layoutManager = LinearLayoutManager(context)
+                        rvAssessment.adapter = assessmentResultAdapter
+                    }
+                }
+
+                override fun onFailure(call: Call<AssessmentResultResponse>, t: Throwable) {
+                    Log.e("INFO", "onFailure: ${t.message.toString()}")
+                }
+            })
+        }
+    }
+
+    fun getAllAssessmentResultz(){
+//        val client = ApiConfig.getApiService().getAllAssessmentResult("Bearer $token", userId)
+//
+//        assessmentResultAdapter = AssessmentResultAdapter(AssessmentResultDummy.dataAssessmentResult.data!!, requireContext())
+//        rvAssessmentResult.layoutManager = LinearLayoutManager(context)
+//        rvAssessmentResult.adapter = assessmentResultAdapter
 
 //        launch{
 //            client.enqueue(object : Callback<AssessmentResultResponse> {

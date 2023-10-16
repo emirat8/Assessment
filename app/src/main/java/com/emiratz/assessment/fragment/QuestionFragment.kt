@@ -12,8 +12,22 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.emiratz.assessment.R
 import com.emiratz.assessment.adapter.QuestionAdapter
-import com.emiratz.assessment.model.AssessmentDummy
+import com.emiratz.assessment.model.AnswerDetail
+import com.emiratz.assessment.model.Choice
+import com.emiratz.assessment.model.Question
+import com.emiratz.assessment.model.QuestionRequest
 import com.emiratz.assessment.model.QuestionResponse
+import com.emiratz.assessment.model.ResponseNoData
+import com.emiratz.assessment.network.ApiConfig
+import com.emiratz.assessment.util.DataStoreManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import kotlin.coroutines.CoroutineContext
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -25,20 +39,22 @@ private const val ARG_PARAM2 = "param2"
  * Use the [QuestionFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class QuestionFragment(val listQuestion : List<QuestionResponse?>?) : Fragment() {
+class QuestionFragment(val listQuestion : List<QuestionResponse?>?, val assessmentId : Int?) : Fragment(), CoroutineScope {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
     lateinit var rvQuestion: RecyclerView
     private lateinit var questionAdapter : QuestionAdapter
     lateinit var submitButton: Button
+    private lateinit var dataStoreManager: DataStoreManager
+    private lateinit var job: Job
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+        job = Job()
     }
 
     override fun onCreateView(
@@ -56,32 +72,66 @@ class QuestionFragment(val listQuestion : List<QuestionResponse?>?) : Fragment()
 
         getAllQuestion()
 
+
+
         submitButton.setOnClickListener{
-            // Membuat daftar pertanyaan yang dipilih
-            val selectedQuestions = mutableListOf<QuestionResponse>()
-
-            if (listQuestion != null) {
-                for (question in listQuestion) {
-                    if (question?.selectedChoice != -1) {
-                        if (question != null) {
-                            selectedQuestions.add(question)
-                        }
-                    } else {
-                        Toast.makeText(requireContext(), "Pilih semua opsi", Toast.LENGTH_SHORT).show()
-                    }
-                }
+            launch {
+                dataStoreManager = DataStoreManager(requireContext())
+                val token = dataStoreManager.getTokenValue()
+                Log.i("tokennya", token)
+                sendAnswer(token)
             }
+        }
+    }
+    fun sendAnswer(token:String) {
+        val selectedQuestions = mutableListOf<QuestionResponse>()
 
-            // Di sini Anda memiliki daftar pertanyaan yang dipilih
-            // Anda dapat melakukan apa pun yang Anda butuhkan dengan daftar ini
-
-            // Contoh: Menampilkan pertanyaan yang dipilih dalam log
-            for (selectedQuestion in selectedQuestions) {
-                Log.d("Selected Question", "Question: ${selectedQuestion?.text}, " +
-                        "Selected Choice: ${selectedQuestion?.selectedChoice}")
+        if (listQuestion != null) {
+            for (question in listQuestion) {
+                if (question?.selectedChoice != -1) {
+                    if (question != null) {
+                        selectedQuestions.add(question)
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Pilih semua opsi", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
+        val questionRequests = ArrayList<AnswerDetail?>()
+
+        for (selectedQuestion in selectedQuestions) {
+            val answerDetail = AnswerDetail(
+                Question(selectedQuestion?.id),
+                Choice(selectedQuestion?.selectedChoice)
+            )
+            questionRequests.add(answerDetail)
+        }
+
+        val client = ApiConfig.getApiService()
+            .answerData("Bearer $token",
+                assessmentId,
+                QuestionRequest(questionRequests)
+            )
+
+        client.enqueue(object : Callback<ResponseNoData> {
+            override fun onResponse(
+                call: Call<ResponseNoData>,
+                response: Response<ResponseNoData>
+            ) {
+                Log.i("SEND ANSWER", response.toString())
+                val responseBody = response.body()
+                if (response.isSuccessful && responseBody != null) {
+                    Log.i("SEND ANSWER", "onSuccess: ${responseBody.data}")
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .replace(R.id.frmFragmentRoot, HomeFragment())
+                        .commit()
+                }
+            }
+            override fun onFailure(call: Call<ResponseNoData>, t: Throwable) {
+                Log.e("SEND ANSWER", "onFailure: ${t.message.toString()}")
+            }
+        })
     }
 
     fun getAllQuestion() {
