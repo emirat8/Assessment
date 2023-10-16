@@ -24,10 +24,10 @@ interface ApiService {
     @POST("api/auth/register")
     fun registerData(@Body registerRequest: RegisterRequest) : Call<RegisterResponse>
 
-    @GET("api/assessment/user/{userId}/")
+    @GET("api/assessment/user/{userId}/incomplete")
     fun getAllAssessment(@Header("Authorization") authToken: String, @Path("userId") userId: Int) : Call<ResponseGetAllData>
 
-    @GET("api/assessment/user/{userId}/akwoakwoak")
+    @GET("api/assessment/user/{userId}/complete")
     fun getAllAssessmentResult(@Header("Authorization") authToken: String, @Path("userId") userId: Int) : Call<AssessmentResultResponse>
 
     @POST("api/assessment/{assessmentId}/result")

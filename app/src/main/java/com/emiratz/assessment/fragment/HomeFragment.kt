@@ -41,8 +41,8 @@ private const val ARG_PARAM2 = "param2"
  */
 class HomeFragment : Fragment(), CoroutineScope {
     private lateinit var dataStoreManager: DataStoreManager
-    lateinit var tokenTextView: TextView
-    lateinit var userIdTextView: TextView
+//    lateinit var tokenTextView: TextView
+//    lateinit var userIdTextView: TextView
     lateinit var logoutButton: Button
     lateinit var rvAssessment: RecyclerView
     private lateinit var assessmentAdapter : AssessmentAdapter
@@ -69,24 +69,24 @@ class HomeFragment : Fragment(), CoroutineScope {
         super.onViewCreated(view, savedInstanceState)
         dataStoreManager = DataStoreManager(requireContext())
         logoutButton = view.findViewById(R.id.btnLogout)
-        tokenTextView = view.findViewById(R.id.txtToken)
-        userIdTextView = view.findViewById(R.id.txtUserId)
+//        tokenTextView = view.findViewById(R.id.txtToken)
+//        userIdTextView = view.findViewById(R.id.txtUserId)
         rvAssessment = view.findViewById(R.id.rvAssessment)
         rvAssessmentResult = view.findViewById(R.id.rvAssessmentResult)
 
-        launch {
-            combine(dataStoreManager.getToken, dataStoreManager.getUserId) { token, userId ->
-                tokenTextView.text = "Token : $token!"
-                userIdTextView.text = "UserId : $userId!"
-            }.collect()
-        }
+//        launch {
+//            combine(dataStoreManager.getToken, dataStoreManager.getUserId) { token, userId ->
+//                tokenTextView.text = "Token : $token!"
+//                userIdTextView.text = "UserId : $userId!"
+//            }.collect()
+//        }
 
         // Panggil getAllAssessment dengan token dan userId yang diperoleh dari dataStore
         launch {
             val token = dataStoreManager.getTokenValue()
             val userId = dataStoreManager.getUserIdValue()
             getAllAssessment(token, userId)
-            //getAllAssessmentResult(token, userId)
+            getAllAssessmentResult(token, userId)
         }
 
         logoutButton.setOnClickListener {
@@ -117,7 +117,14 @@ class HomeFragment : Fragment(), CoroutineScope {
                     Log.i("ASSESSMENT", response.toString())
                     val responseBody = response.body()
                     if (response.isSuccessful && responseBody != null) {
-                        Log.i("asd",responseBody.data?.filter { it?.participants!!.find { it?.id == userId }?.results!!.size == 0 }.toString())
+//                        val unfinishedAssessments = responseBody.data?.filter { assessment ->
+//                            val hasUserCompleted = assessment?.participants?.any { participant ->
+//                                participant?.id == userId && participant.results?.isNotEmpty() ?:true
+//                            } == false
+//
+//                            !hasUserCompleted
+//                        }
+//                        Log.i("ASSESSMENT", unfinishedAssessments.orEmpty().toString())
                         assessmentAdapter = AssessmentAdapter(responseBody.data!!, requireActivity())
                         rvAssessment.layoutManager = LinearLayoutManager(context)
                         rvAssessment.adapter = assessmentAdapter
@@ -143,9 +150,9 @@ class HomeFragment : Fragment(), CoroutineScope {
                     Log.i("ASSESSMENT", response.toString())
                     val responseBody = response.body()
                     if (response.isSuccessful && responseBody != null) {
-                        assessmentResultAdapter = AssessmentResultAdapter(responseBody.data!!, requireActivity())
-                        rvAssessment.layoutManager = LinearLayoutManager(context)
-                        rvAssessment.adapter = assessmentResultAdapter
+                        assessmentResultAdapter = AssessmentResultAdapter(responseBody.data!!, userId, requireActivity())
+                        rvAssessmentResult.layoutManager = LinearLayoutManager(context)
+                        rvAssessmentResult.adapter = assessmentResultAdapter
                     }
                 }
 
@@ -154,35 +161,6 @@ class HomeFragment : Fragment(), CoroutineScope {
                 }
             })
         }
-    }
-
-    fun getAllAssessmentResultz(){
-//        val client = ApiConfig.getApiService().getAllAssessmentResult("Bearer $token", userId)
-//
-//        assessmentResultAdapter = AssessmentResultAdapter(AssessmentResultDummy.dataAssessmentResult.data!!, requireContext())
-//        rvAssessmentResult.layoutManager = LinearLayoutManager(context)
-//        rvAssessmentResult.adapter = assessmentResultAdapter
-
-//        launch{
-//            client.enqueue(object : Callback<AssessmentResultResponse> {
-//                override fun onResponse(
-//                    call: Call<AssessmentResultResponse>,
-//                    response: Response<AssessmentResultResponse>
-//                ) {
-//                    Log.i("ASSESSMENT", response.toString())
-//                    val responseBody = response.body()
-//                    if (response.isSuccessful && responseBody != null) {
-//                        assessmentResultAdapter = AssessmentResultAdapter(responseBody.data!!, requireContext())
-//                        rvAssessmentResult.layoutManager = LinearLayoutManager(context)
-//                        rvAssessmentResult.adapter = assessmentResultAdapter
-//                    }
-//                }
-//
-//                override fun onFailure(call: Call<ResponseGetAllData>, t: Throwable) {
-//                    Log.e("INFO", "onFailure: ${t.message.toString()}")
-//                }
-//            })
-//        }
     }
 
     companion object {

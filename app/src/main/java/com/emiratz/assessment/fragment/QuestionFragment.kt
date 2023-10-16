@@ -114,6 +114,8 @@ class QuestionFragment(val listQuestion : List<QuestionResponse?>?, val assessme
                 QuestionRequest(questionRequests)
             )
 
+        Log.i("SEND ANSWER", QuestionRequest(questionRequests).toString())
+
         client.enqueue(object : Callback<ResponseNoData> {
             override fun onResponse(
                 call: Call<ResponseNoData>,

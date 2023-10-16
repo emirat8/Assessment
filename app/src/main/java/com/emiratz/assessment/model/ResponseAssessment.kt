@@ -24,8 +24,6 @@ data class AssessmentDetailResponse(
     val endDate: String? = null,
     @field:SerializedName("questions")
     val questions: List<QuestionResponse?>? = null,
-    @field:SerializedName("participants")
-    val participants: List<ParticipantResponse?>? = null,
 ) : Parcelable
 
 @Parcelize
@@ -34,12 +32,6 @@ data class ParticipantResponse(
     val id: Int? = null,
     @field:SerializedName("results")
     val results: List<ResultResponse?>? = null,
-) : Parcelable
-
-@Parcelize
-data class ResultResponse(
-    @field:SerializedName("id")
-    val id: Int? = null,
 ) : Parcelable
 
 @Parcelize
