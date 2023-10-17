@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.emiratz.assessment.R
 import com.emiratz.assessment.adapter.AssessmentAdapter
 import com.emiratz.assessment.adapter.AssessmentResultAdapter
@@ -50,6 +51,9 @@ class HomeFragment : Fragment(), CoroutineScope {
     private lateinit var assessmentResultAdapter : AssessmentResultAdapter
     private lateinit var job: Job
 
+    lateinit var swipeRefreshLayout : SwipeRefreshLayout
+
+
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
@@ -73,6 +77,8 @@ class HomeFragment : Fragment(), CoroutineScope {
 //        userIdTextView = view.findViewById(R.id.txtUserId)
         rvAssessment = view.findViewById(R.id.rvAssessment)
         rvAssessmentResult = view.findViewById(R.id.rvAssessmentResult)
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout)
+
 
 //        launch {
 //            combine(dataStoreManager.getToken, dataStoreManager.getUserId) { token, userId ->
@@ -87,6 +93,10 @@ class HomeFragment : Fragment(), CoroutineScope {
             val userId = dataStoreManager.getUserIdValue()
             getAllAssessment(token, userId)
             getAllAssessmentResult(token, userId)
+
+            swipeRefreshLayout.setOnRefreshListener {
+                getAllAssessment(token, userId)
+            }
         }
 
         logoutButton.setOnClickListener {
@@ -129,10 +139,12 @@ class HomeFragment : Fragment(), CoroutineScope {
                         rvAssessment.layoutManager = LinearLayoutManager(context)
                         rvAssessment.adapter = assessmentAdapter
                     }
+                    swipeRefreshLayout.isRefreshing = false
                 }
 
                 override fun onFailure(call: Call<ResponseGetAllData>, t: Throwable) {
                     Log.e("INFO", "onFailure: ${t.message.toString()}")
+                    swipeRefreshLayout.isRefreshing = false
                 }
             })
         }

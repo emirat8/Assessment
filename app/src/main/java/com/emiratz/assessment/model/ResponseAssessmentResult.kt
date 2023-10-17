@@ -3,6 +3,7 @@ package com.emiratz.assessment.model
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import java.util.Date
 
 @Parcelize
 data class AssessmentResultResponse(
@@ -33,7 +34,9 @@ data class ResultResponse(
     @field:SerializedName("finalScore")
     val finalScore: Int? = null,
     @field:SerializedName("user")
-    val user: UserResultResponse? = null
+    val user: UserResultResponse? = null,
+    @field:SerializedName("createdAt")
+    val createdAt: Date
 ) : Parcelable
 
 @Parcelize
