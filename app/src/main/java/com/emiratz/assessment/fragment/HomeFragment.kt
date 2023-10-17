@@ -96,6 +96,7 @@ class HomeFragment : Fragment(), CoroutineScope {
 
             swipeRefreshLayout.setOnRefreshListener {
                 getAllAssessment(token, userId)
+                getAllAssessmentResult(token, userId)
             }
         }
 

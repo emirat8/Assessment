@@ -25,7 +25,8 @@ class AssessmentAdapter(var data : List<AssessmentDetailResponse?>, var context:
 
         holder.itemView.setOnClickListener{
             context.supportFragmentManager.beginTransaction()
-                .replace(R.id.frmFragmentRoot, QuestionFragment(data.get(position)?.questions, data.get(position)?.id))
+                .replace(R.id.frmFragmentRoot, QuestionFragment(data.get(position)?.questions,
+                    data.get(position)?.endDate!!, data.get(position)?.id))
                 .addToBackStack(null)
                 .commit()
         }

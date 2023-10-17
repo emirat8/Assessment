@@ -29,12 +29,12 @@ class AssessmentResultAdapter(var data : List<AssessmentResultDetailResponse?>, 
         holder.txtAssessmentTitle.text = data.get(position)?.title
         holder.txtAssessmentCloseDate.text = formattedDate.toString()
 
-        holder.itemView.setOnClickListener{
-            context.supportFragmentManager.beginTransaction()
-                .replace(R.id.frmFragmentRoot, QuestionResultFragment(data.get(position)?.questions))
-                .addToBackStack(null)
-                .commit()
-        }
+//        holder.itemView.setOnClickListener{
+//            context.supportFragmentManager.beginTransaction()
+//                .replace(R.id.frmFragmentRoot, QuestionResultFragment(data.get(position)?.questions))
+//                .addToBackStack(null)
+//                .commit()
+//        }
     }
 
     fun getFinalScoreByUserId(results: List<ResultResponse?>?, userIdToFind: Int): Int {
