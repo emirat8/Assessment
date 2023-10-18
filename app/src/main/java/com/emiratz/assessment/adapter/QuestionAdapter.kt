@@ -11,8 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.emiratz.assessment.R
 import com.emiratz.assessment.model.AssessmentDetailResponse
 import com.emiratz.assessment.model.QuestionResponse
+import java.util.Date
 
-class QuestionAdapter(var data : List<QuestionResponse?>?, var context: Context): RecyclerView.Adapter<QuestionAdapter.ViewHolder>() {
+class QuestionAdapter(var data : List<QuestionResponse?>?,  var context: Context): RecyclerView.Adapter<QuestionAdapter.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QuestionAdapter.ViewHolder =
         QuestionAdapter.ViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.item_question, parent, false)

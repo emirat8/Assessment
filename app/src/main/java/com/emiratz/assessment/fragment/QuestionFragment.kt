@@ -1,12 +1,14 @@
 package com.emiratz.assessment.fragment
 
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,6 +29,9 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.time.Instant
+import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
 // TODO: Rename parameter arguments, choose names that match
@@ -39,7 +44,7 @@ private const val ARG_PARAM2 = "param2"
  * Use the [QuestionFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class QuestionFragment(val listQuestion : List<QuestionResponse?>?, val assessmentId : Int?) : Fragment(), CoroutineScope {
+class QuestionFragment(val listQuestion : List<QuestionResponse?>?, val endDate: String, val assessmentId : Int?) : Fragment(), CoroutineScope {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -48,6 +53,7 @@ class QuestionFragment(val listQuestion : List<QuestionResponse?>?, val assessme
     lateinit var submitButton: Button
     private lateinit var dataStoreManager: DataStoreManager
     private lateinit var job: Job
+    private lateinit var txtCountDown: TextView
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -65,14 +71,41 @@ class QuestionFragment(val listQuestion : List<QuestionResponse?>?, val assessme
         return inflater.inflate(R.layout.fragment_question, container, false)
     }
 
+    fun parseIsoDateToMilliseconds(isoDate: String): Long {
+        val formatter = DateTimeFormatter.ISO_DATE_TIME
+        val instant = Instant.from(formatter.parse(isoDate))
+        return instant.toEpochMilli()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rvQuestion = view.findViewById(R.id.rvQuestion)
         submitButton = view.findViewById(R.id.btnSubmit)
+        txtCountDown = view.findViewById(R.id.txtCountDown)
 
         getAllQuestion()
 
+        val endMilli = parseIsoDateToMilliseconds(endDate)
+        val startMilli = Instant.now().toEpochMilli()
 
+
+        val timer = object: CountDownTimer(endMilli - startMilli, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                val seconds = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) % 60
+                val minutes = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished) % 60
+                val hours = TimeUnit.MILLISECONDS.toHours(millisUntilFinished)
+
+                // Update the TextView
+                val formattedTime = String.format("%02d : %02d : %02d", hours, minutes, seconds)
+                txtCountDown.text = formattedTime
+            }
+
+            override fun onFinish() {
+
+            }
+        }
+
+        timer.start()
 
         submitButton.setOnClickListener{
             launch {
