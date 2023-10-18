@@ -50,7 +50,7 @@ data class RegisterRequest(
     val password: String? = null,
 
     @field:SerializedName("name")
-    val nama: String? = null,
+    val name: String? = null
 ) : Parcelable
 
 @Parcelize

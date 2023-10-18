@@ -1,6 +1,5 @@
 package com.emiratz.assessment.adapter
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,9 +7,7 @@ import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.emiratz.assessment.R
-import com.emiratz.assessment.fragment.QuestionFragment
 import com.emiratz.assessment.fragment.QuestionResultFragment
-import com.emiratz.assessment.model.AssessmentDetailResponse
 import com.emiratz.assessment.model.AssessmentResultDetailResponse
 import com.emiratz.assessment.model.ResultResponse
 import java.text.SimpleDateFormat

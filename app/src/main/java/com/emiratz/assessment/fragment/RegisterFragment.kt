@@ -34,6 +34,7 @@ class RegisterFragment : Fragment() {
     private var param2: String? = null
     lateinit var btnRegister: Button
     lateinit var txtNama: EditText
+    lateinit var txtUsername: EditText
     lateinit var txtEmail: EditText
     lateinit var txtPassword: EditText
 
@@ -59,13 +60,15 @@ class RegisterFragment : Fragment() {
         txtNama = view.findViewById(R.id.editNama)
         txtEmail = view.findViewById(R.id.editEmail)
         txtPassword = view.findViewById(R.id.editPassword)
+        txtUsername = view.findViewById(R.id.editUsername)
 
         btnRegister.setOnClickListener(View.OnClickListener {
             register(
                 RegisterRequest(
-                    txtNama.text.toString(),
                     txtEmail.text.toString(),
+                    txtUsername.text.toString(),
                     txtPassword.text.toString(),
+                    txtNama.text.toString(),
                 )
             )
         })
@@ -74,7 +77,7 @@ class RegisterFragment : Fragment() {
     fun register(data: RegisterRequest) {
         val client = ApiConfig.getApiService()
             .registerData(
-                RegisterRequest(data.email.toString(), data.username.toString(), data.password.toString(), data.nama.toString()
+                RegisterRequest(data.email, data.username, data.password, data.name
                 )
             )
 

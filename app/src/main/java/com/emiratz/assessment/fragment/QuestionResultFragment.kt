@@ -1,34 +1,18 @@
 package com.emiratz.assessment.fragment
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.emiratz.assessment.R
-import com.emiratz.assessment.adapter.QuestionAdapter
 import com.emiratz.assessment.adapter.QuestionResultAdapter
-import com.emiratz.assessment.model.AnswerDetail
-import com.emiratz.assessment.model.Choice
-import com.emiratz.assessment.model.Question
-import com.emiratz.assessment.model.QuestionRequest
-import com.emiratz.assessment.model.QuestionResponse
 import com.emiratz.assessment.model.QuestionResultResponse
-import com.emiratz.assessment.model.ResponseNoData
-import com.emiratz.assessment.network.ApiConfig
-import com.emiratz.assessment.util.DataStoreManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import kotlin.coroutines.CoroutineContext
 
 // TODO: Rename parameter arguments, choose names that match
@@ -41,7 +25,7 @@ private const val ARG_PARAM2 = "param2"
  * Use the [QuestionResultFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class QuestionResultFragment(val listQuestion : List<QuestionResultResponse?>?) : Fragment(),
+class QuestionResultFragment(val listQuestion: List<QuestionResultResponse?>?) : Fragment(),
     CoroutineScope {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
